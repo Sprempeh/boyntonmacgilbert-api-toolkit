@@ -5,15 +5,15 @@ info:
     API for managing payment authorizations in a financial services platform.
     This API handles the initial authorization step in the payment workflow:
     Authorization → Capture → Refund
-    
+
     **Authentication:**
     - External partners: OAuth 2.0 (Bearer token)
     - Internal services: JWT token (Bearer token)
-    
+
     **Rate Limits:**
     - Standard tier: 100 requests/minute
     - Enterprise tier: 1000 requests/minute
-  version: 2.0.0
+  version: 2.0.1
   contact:
     name: Payment Platform Team
     email: payment-platform@example.com
@@ -47,7 +47,7 @@ paths:
       description: |
         Creates a hold on the customer's payment method for the specified amount.
         The authorization does not transfer funds - it only reserves them.
-        
+
         **Business Rules:**
         - Authorizations expire after 7 days if not captured
         - Maximum authorization amount is $50,000
@@ -58,7 +58,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateAuthorizationRequest'
+              $ref: "#/components/schemas/CreateAuthorizationRequest"
             examples:
               standard:
                 summary: Standard authorization
@@ -72,30 +72,30 @@ paths:
                     orderId: "order_12345"
                     channel: "web"
       responses:
-        '201':
+        "201":
           description: Authorization created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthorizationResponse'
-        '400':
+                $ref: "#/components/schemas/AuthorizationResponse"
+        "400":
           description: Bad request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
           description: Unprocessable entity - payment method declined
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
     get:
       tags:
@@ -125,12 +125,12 @@ paths:
             default: 20
             maximum: 100
       responses:
-        '200':
+        "200":
           description: List of authorizations
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthorizationListResponse'
+                $ref: "#/components/schemas/AuthorizationListResponse"
 
   /authorizations/{authorizationId}:
     get:
@@ -145,18 +145,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Authorization details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthorizationResponse'
-        '404':
+                $ref: "#/components/schemas/AuthorizationResponse"
+        "404":
           description: Authorization not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /authorizations/{authorizationId}/capture:
     post:
@@ -187,18 +187,18 @@ paths:
                   description: Whether this is the final capture
                   default: true
       responses:
-        '200':
+        "200":
           description: Authorization captured
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CaptureResponse'
-        '400':
+                $ref: "#/components/schemas/CaptureResponse"
+        "400":
           description: Cannot capture - invalid state
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /authorizations/{authorizationId}/void:
     post:
@@ -223,12 +223,12 @@ paths:
                   type: string
                   description: Reason for voiding
       responses:
-        '200':
+        "200":
           description: Authorization voided
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthorizationResponse'
+                $ref: "#/components/schemas/AuthorizationResponse"
 
   /health:
     get:
@@ -238,12 +238,12 @@ paths:
       operationId: healthCheck
       security: []
       responses:
-        '200':
+        "200":
           description: Service is healthy
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthResponse'
+                $ref: "#/components/schemas/HealthResponse"
 
 components:
   securitySchemes:
@@ -348,9 +348,9 @@ components:
         authorizations:
           type: array
           items:
-            $ref: '#/components/schemas/AuthorizationResponse'
+            $ref: "#/components/schemas/AuthorizationResponse"
         pagination:
-          $ref: '#/components/schemas/Pagination'
+          $ref: "#/components/schemas/Pagination"
 
     CaptureResponse:
       type: object
@@ -416,7 +416,15 @@ components:
           type: object
         code:
           type: string
-          enum: [VALIDATION_ERROR, BUSINESS_RULE_VIOLATION, AUTHENTICATION_ERROR, AUTHORIZATION_ERROR, RESOURCE_NOT_FOUND, PAYMENT_DECLINED]
+          enum:
+            [
+              VALIDATION_ERROR,
+              BUSINESS_RULE_VIOLATION,
+              AUTHENTICATION_ERROR,
+              AUTHORIZATION_ERROR,
+              RESOURCE_NOT_FOUND,
+              PAYMENT_DECLINED,
+            ]
         timestamp:
           type: string
           format: date-time

@@ -5,15 +5,15 @@ info:
     Comprehensive API for managing payment refunds in a financial services platform.
     This API handles refund creation, status tracking, cancellation, and reporting for
     payment transactions processed through the authorization and capture workflow.
-    
+
     **Authentication:**
     - External partners: OAuth 2.0 (Bearer token)
     - Internal services: JWT token (Bearer token)
-    
+
     **Rate Limits:**
     - Standard tier: 100 requests/minute
     - Enterprise tier: 1000 requests/minute
-  version: 2.1.0
+  version: 2.0.2
   contact:
     name: Payment Platform Team
     email: payment-platform@example.com
@@ -55,7 +55,7 @@ paths:
         can be for the full amount or a partial amount. The refund status will be
         'pending' initially and transition to 'completed' or 'failed' based on
         processing results.
-        
+
         **Business Rules:**
         - Refunds can only be issued for transactions in 'captured' status
         - Partial refunds must not exceed the original transaction amount
@@ -67,7 +67,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateRefundRequest'
+              $ref: "#/components/schemas/CreateRefundRequest"
             examples:
               full_refund:
                 summary: Full refund example
@@ -92,7 +92,7 @@ paths:
                     ticketNumber: "TKT-67890"
                     refundReasonCode: "ITEM_DAMAGED"
       responses:
-        '201':
+        "201":
           description: Refund created successfully
           headers:
             Location:
@@ -104,7 +104,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RefundResponse'
+                $ref: "#/components/schemas/RefundResponse"
               examples:
                 success_full:
                   summary: Full refund created
@@ -149,12 +149,12 @@ paths:
                       self: "/refunds/rfnd_xyz789ghi012"
                       status: "/refunds/rfnd_xyz789ghi012/status"
                       cancel: "/refunds/rfnd_xyz789ghi012/cancel"
-        '400':
+        "400":
           description: Bad request - Invalid input or business rule violation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 invalid_amount:
                   summary: Invalid refund amount
@@ -190,12 +190,12 @@ paths:
                       maxRefunds: 5
                     code: "BUSINESS_RULE_VIOLATION"
                     timestamp: "2024-01-15T10:30:00Z"
-        '401':
+        "401":
           description: Unauthorized - Invalid or missing authentication token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 missing_token:
                   summary: Missing authentication token
@@ -216,12 +216,12 @@ paths:
                       expirationTime: "2024-01-15T09:00:00Z"
                     code: "AUTHENTICATION_ERROR"
                     timestamp: "2024-01-15T10:30:00Z"
-        '404':
+        "404":
           description: Transaction not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 transaction_not_found:
                   summary: Transaction does not exist
@@ -233,12 +233,12 @@ paths:
                       suggestion: "Verify the transaction ID and try again"
                     code: "RESOURCE_NOT_FOUND"
                     timestamp: "2024-01-15T10:30:00Z"
-        '409':
+        "409":
           description: Conflict - Refund already exists or transaction state conflict
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 duplicate_refund:
                   summary: Duplicate refund request
@@ -251,12 +251,12 @@ paths:
                       conflictType: "duplicate_request"
                     code: "CONFLICT"
                     timestamp: "2024-01-15T10:30:00Z"
-        '422':
+        "422":
           description: Unprocessable entity - Business validation failed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 transaction_too_old:
                   summary: Transaction too old for refund
@@ -270,12 +270,12 @@ paths:
                       maxDaysAllowed: 180
                     code: "BUSINESS_RULE_VIOLATION"
                     timestamp: "2024-01-15T10:30:00Z"
-        '429':
+        "429":
           description: Too many requests - Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 rate_limit_exceeded:
                   summary: Rate limit exceeded
@@ -288,12 +288,12 @@ paths:
                       retryAfter: 45
                     code: "RATE_LIMIT_ERROR"
                     timestamp: "2024-01-15T10:30:00Z"
-        '500':
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 internal_error:
                   summary: Internal server error
@@ -316,12 +316,12 @@ paths:
                       retryAfter: 1800
                     code: "SERVER_ERROR"
                     timestamp: "2024-01-15T10:30:00Z"
-        '503':
+        "503":
           description: Service unavailable - Maintenance or overload
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 maintenance_mode:
                   summary: Service in maintenance
@@ -344,19 +344,19 @@ paths:
         in descending order (newest first).
       operationId: listRefunds
       parameters:
-        - $ref: '#/components/parameters/TransactionIdFilter'
-        - $ref: '#/components/parameters/StatusFilter'
-        - $ref: '#/components/parameters/StartDateFilter'
-        - $ref: '#/components/parameters/EndDateFilter'
-        - $ref: '#/components/parameters/PageNumber'
-        - $ref: '#/components/parameters/PageSize'
+        - $ref: "#/components/parameters/TransactionIdFilter"
+        - $ref: "#/components/parameters/StatusFilter"
+        - $ref: "#/components/parameters/StartDateFilter"
+        - $ref: "#/components/parameters/EndDateFilter"
+        - $ref: "#/components/parameters/PageNumber"
+        - $ref: "#/components/parameters/PageSize"
       responses:
-        '200':
+        "200":
           description: Successful response with refund list
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RefundListResponse'
+                $ref: "#/components/schemas/RefundListResponse"
               examples:
                 multiple_refunds:
                   summary: Multiple refunds found
@@ -403,14 +403,14 @@ paths:
                       totalItems: 0
                       hasNext: false
                       hasPrevious: false
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '429':
-          $ref: '#/components/responses/RateLimitExceeded'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimitExceeded"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /refunds/{refundId}:
     get:
@@ -422,14 +422,14 @@ paths:
         Includes full status history, processing details, and related transaction information.
       operationId: getRefund
       parameters:
-        - $ref: '#/components/parameters/RefundId'
+        - $ref: "#/components/parameters/RefundId"
       responses:
-        '200':
+        "200":
           description: Refund details retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RefundDetailResponse'
+                $ref: "#/components/schemas/RefundDetailResponse"
               examples:
                 completed_refund:
                   summary: Completed refund details
@@ -521,12 +521,12 @@ paths:
                     links:
                       self: "/refunds/rfnd_failed123"
                       retry: "/refunds/rfnd_failed123/retry"
-        '404':
+        "404":
           description: Refund not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 refund_not_found:
                   summary: Refund does not exist
@@ -538,10 +538,10 @@ paths:
                       suggestion: "Verify the refund ID and try again"
                     code: "RESOURCE_NOT_FOUND"
                     timestamp: "2024-01-15T10:30:00Z"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /refunds/{refundId}/status:
     get:
@@ -554,14 +554,14 @@ paths:
         refund details endpoint.
       operationId: getRefundStatus
       parameters:
-        - $ref: '#/components/parameters/RefundId'
+        - $ref: "#/components/parameters/RefundId"
       responses:
-        '200':
+        "200":
           description: Refund status retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RefundStatusResponse'
+                $ref: "#/components/schemas/RefundStatusResponse"
               examples:
                 pending_status:
                   summary: Pending refund status
@@ -585,12 +585,12 @@ paths:
                     updatedAt: "2024-01-15T10:45:00Z"
                     failedAt: "2024-01-15T10:45:00Z"
                     failureReason: "Payment gateway connection timeout"
-        '404':
+        "404":
           description: Refund not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 refund_not_found:
                   summary: Refund does not exist
@@ -601,10 +601,10 @@ paths:
                       refundId: "rfnd_invalid123"
                     code: "RESOURCE_NOT_FOUND"
                     timestamp: "2024-01-15T10:30:00Z"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /refunds/{refundId}/cancel:
     post:
@@ -617,7 +617,7 @@ paths:
         immediately moved to 'cancelled' status.
       operationId: cancelRefund
       parameters:
-        - $ref: '#/components/parameters/RefundId'
+        - $ref: "#/components/parameters/RefundId"
       requestBody:
         required: false
         content:
@@ -635,12 +635,12 @@ paths:
                 value:
                   reason: "Customer changed mind and wants to keep the item"
       responses:
-        '200':
+        "200":
           description: Refund cancelled successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RefundResponse'
+                $ref: "#/components/schemas/RefundResponse"
               examples:
                 cancelled_refund:
                   summary: Refund cancelled
@@ -659,12 +659,12 @@ paths:
                     cancellationReason: "Customer changed mind and wants to keep the item"
                     links:
                       self: "/refunds/rfnd_xyz789ghi012"
-        '400':
+        "400":
           description: Bad request - Cannot cancel refund
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 cannot_cancel:
                   summary: Cannot cancel processed refund
@@ -677,12 +677,12 @@ paths:
                       allowedStatuses: ["pending"]
                     code: "BUSINESS_RULE_VIOLATION"
                     timestamp: "2024-01-15T10:30:00Z"
-        '404':
+        "404":
           description: Refund not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 refund_not_found:
                   summary: Refund does not exist
@@ -693,10 +693,10 @@ paths:
                       refundId: "rfnd_invalid123"
                     code: "RESOURCE_NOT_FOUND"
                     timestamp: "2024-01-15T10:30:00Z"
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 
   /health:
     get:
@@ -708,7 +708,7 @@ paths:
         and load balancer health checks.
       operationId: healthCheck
       responses:
-        '200':
+        "200":
           description: Service is healthy
           content:
             application/json:
@@ -759,7 +759,7 @@ paths:
                       database: "operational"
                       paymentGateway: "degraded"
                       notificationService: "operational"
-        '503':
+        "503":
           description: Service is unhealthy
           content:
             application/json:
@@ -829,7 +829,7 @@ components:
       description: Unique identifier for the refund
       schema:
         type: string
-        pattern: '^rfnd_[a-zA-Z0-9]+$'
+        pattern: "^rfnd_[a-zA-Z0-9]+$"
         example: "rfnd_abc123def456"
     TransactionIdFilter:
       name: transactionId
@@ -837,7 +837,7 @@ components:
       description: Filter refunds by transaction ID
       schema:
         type: string
-        pattern: '^txn_[a-zA-Z0-9]+$'
+        pattern: "^txn_[a-zA-Z0-9]+$"
         example: "txn_1234567890abcdef"
     StatusFilter:
       name: status
@@ -892,7 +892,7 @@ components:
         transactionId:
           type: string
           description: The transaction ID to refund
-          pattern: '^txn_[a-zA-Z0-9]+$'
+          pattern: "^txn_[a-zA-Z0-9]+$"
           example: "txn_1234567890abcdef"
         amount:
           type: integer
@@ -904,7 +904,7 @@ components:
         currency:
           type: string
           description: Currency code (ISO 4217). Must match original transaction currency.
-          pattern: '^[A-Z]{3}$'
+          pattern: "^[A-Z]{3}$"
           default: "USD"
           example: "USD"
         reason:
@@ -932,12 +932,12 @@ components:
         refundId:
           type: string
           description: Unique identifier for the refund
-          pattern: '^rfnd_[a-zA-Z0-9]+$'
+          pattern: "^rfnd_[a-zA-Z0-9]+$"
           example: "rfnd_abc123def456"
         transactionId:
           type: string
           description: The original transaction ID
-          pattern: '^txn_[a-zA-Z0-9]+$'
+          pattern: "^txn_[a-zA-Z0-9]+$"
           example: "txn_1234567890abcdef"
         status:
           type: string
@@ -1018,18 +1018,18 @@ components:
             initiatedBy: "admin@example.com"
             ticketNumber: "TKT-12345"
         links:
-          $ref: '#/components/schemas/RefundLinks'
+          $ref: "#/components/schemas/RefundLinks"
 
     RefundDetailResponse:
       allOf:
-        - $ref: '#/components/schemas/RefundResponse'
+        - $ref: "#/components/schemas/RefundResponse"
         - type: object
           properties:
             statusHistory:
               type: array
               description: History of status changes
               items:
-                $ref: '#/components/schemas/StatusHistoryEntry'
+                $ref: "#/components/schemas/StatusHistoryEntry"
             paymentGatewayRefundId:
               type: string
               description: Refund ID from the payment gateway
@@ -1041,7 +1041,7 @@ components:
         refundId:
           type: string
           description: Unique identifier for the refund
-          pattern: '^rfnd_[a-zA-Z0-9]+$'
+          pattern: "^rfnd_[a-zA-Z0-9]+$"
           example: "rfnd_abc123def456"
         status:
           type: string
@@ -1080,9 +1080,9 @@ components:
           type: array
           description: List of refunds
           items:
-            $ref: '#/components/schemas/RefundResponse'
+            $ref: "#/components/schemas/RefundResponse"
         pagination:
-          $ref: '#/components/schemas/Pagination'
+          $ref: "#/components/schemas/Pagination"
 
     StatusHistoryEntry:
       type: object
@@ -1181,7 +1181,18 @@ components:
         code:
           type: string
           description: Error category code
-          enum: [VALIDATION_ERROR, BUSINESS_RULE_VIOLATION, AUTHENTICATION_ERROR, AUTHORIZATION_ERROR, RESOURCE_NOT_FOUND, CONFLICT, RATE_LIMIT_ERROR, SERVER_ERROR, SERVICE_UNAVAILABLE]
+          enum:
+            [
+              VALIDATION_ERROR,
+              BUSINESS_RULE_VIOLATION,
+              AUTHENTICATION_ERROR,
+              AUTHORIZATION_ERROR,
+              RESOURCE_NOT_FOUND,
+              CONFLICT,
+              RATE_LIMIT_ERROR,
+              SERVER_ERROR,
+              SERVICE_UNAVAILABLE,
+            ]
           example: "VALIDATION_ERROR"
         timestamp:
           type: string
@@ -1195,7 +1206,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           examples:
             validation_error:
               summary: Validation error
@@ -1212,7 +1223,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           examples:
             unauthorized:
               summary: Authentication required
@@ -1226,7 +1237,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           examples:
             rate_limit:
               summary: Rate limit exceeded
@@ -1244,7 +1255,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           examples:
             internal_error:
               summary: Internal server error
@@ -1255,5 +1266,3 @@ components:
                   requestId: "req_abc123def456"
                 code: "SERVER_ERROR"
                 timestamp: "2024-01-15T10:30:00Z"
-
-
