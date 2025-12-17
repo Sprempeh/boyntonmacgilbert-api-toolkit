@@ -1,0 +1,43 @@
+{
+  "id": "payment-refund-qa",
+  "name": "Payment Refund API - QA",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://api.qa.company.com/v1",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "auth_url",
+      "value": "https://auth.qa.company.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "client_id",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "client_secret",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "jwt_expiry",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

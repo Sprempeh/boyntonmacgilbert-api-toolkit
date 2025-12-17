@@ -1,0 +1,43 @@
+{
+  "id": "env-local-payment-refund",
+  "name": "Payment Refund API - Local",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/v2",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "auth_url",
+      "value": "http://localhost:3000",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "client_id",
+      "value": "test",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "client_secret",
+      "value": "test",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "jwt_expiry",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

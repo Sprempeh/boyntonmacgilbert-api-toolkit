@@ -1,0 +1,422 @@
+openapi: 3.0.3
+info:
+  title: Payment Processing API - Authorization Service
+  description: |
+    API for managing payment authorizations in a financial services platform.
+    This API handles the initial authorization step in the payment workflow:
+    Authorization → Capture → Refund
+    
+    **Authentication:**
+    - External partners: OAuth 2.0 (Bearer token)
+    - Internal services: JWT token (Bearer token)
+    
+    **Rate Limits:**
+    - Standard tier: 100 requests/minute
+    - Enterprise tier: 1000 requests/minute
+  version: 2.0.0
+  contact:
+    name: Payment Platform Team
+    email: payment-platform@example.com
+
+servers:
+  - url: https://api.payments.example.com/v2
+    description: Production environment
+  - url: https://api-uat.payments.example.com/v2
+    description: UAT environment
+  - url: https://api-qa.payments.example.com/v2
+    description: QA environment
+  - url: https://api-dev.payments.example.com/v2
+    description: Development environment
+
+tags:
+  - name: Authorizations
+    description: Operations for creating and managing payment authorizations
+  - name: Health
+    description: Service health and availability checks
+
+security:
+  - OAuth2: []
+  - JWT: []
+
+paths:
+  /authorizations:
+    post:
+      tags:
+        - Authorizations
+      summary: Create a new authorization
+      description: |
+        Creates a hold on the customer's payment method for the specified amount.
+        The authorization does not transfer funds - it only reserves them.
+        
+        **Business Rules:**
+        - Authorizations expire after 7 days if not captured
+        - Maximum authorization amount is $50,000
+        - One active authorization per payment method at a time
+      operationId: createAuthorization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAuthorizationRequest'
+            examples:
+              standard:
+                summary: Standard authorization
+                value:
+                  amount: 10000
+                  currency: "USD"
+                  paymentMethodId: "pm_card_visa_4242"
+                  customerId: "cust_abc123"
+                  description: "Order #12345"
+                  metadata:
+                    orderId: "order_12345"
+                    channel: "web"
+      responses:
+        '201':
+          description: Authorization created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable entity - payment method declined
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - Authorizations
+      summary: List authorizations
+      description: Retrieves a paginated list of authorizations with optional filtering.
+      operationId: listAuthorizations
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, authorized, captured, voided, expired]
+        - name: customerId
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: List of authorizations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationListResponse'
+
+  /authorizations/{authorizationId}:
+    get:
+      tags:
+        - Authorizations
+      summary: Get authorization details
+      operationId: getAuthorization
+      parameters:
+        - name: authorizationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Authorization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationResponse'
+        '404':
+          description: Authorization not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /authorizations/{authorizationId}/capture:
+    post:
+      tags:
+        - Authorizations
+      summary: Capture an authorization
+      description: |
+        Captures (settles) an authorized payment, transferring the funds.
+        Can capture the full amount or a partial amount.
+      operationId: captureAuthorization
+      parameters:
+        - name: authorizationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: integer
+                  description: Amount to capture in cents (optional, defaults to full amount)
+                finalCapture:
+                  type: boolean
+                  description: Whether this is the final capture
+                  default: true
+      responses:
+        '200':
+          description: Authorization captured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaptureResponse'
+        '400':
+          description: Cannot capture - invalid state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /authorizations/{authorizationId}/void:
+    post:
+      tags:
+        - Authorizations
+      summary: Void an authorization
+      description: Releases the hold on the customer's funds without capturing.
+      operationId: voidAuthorization
+      parameters:
+        - name: authorizationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Reason for voiding
+      responses:
+        '200':
+          description: Authorization voided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationResponse'
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.payments.example.com/oauth/token
+          scopes:
+            authorizations:read: Read authorization data
+            authorizations:write: Create and modify authorizations
+    JWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateAuthorizationRequest:
+      type: object
+      required:
+        - amount
+        - currency
+        - paymentMethodId
+        - customerId
+      properties:
+        amount:
+          type: integer
+          description: Amount in cents
+          minimum: 1
+          maximum: 5000000
+          example: 10000
+        currency:
+          type: string
+          pattern: "^[A-Z]{3}$"
+          example: "USD"
+        paymentMethodId:
+          type: string
+          description: Payment method token
+          example: "pm_card_visa_4242"
+        customerId:
+          type: string
+          description: Customer identifier
+          example: "cust_abc123"
+        description:
+          type: string
+          description: Description of the charge
+          example: "Order #12345"
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+
+    AuthorizationResponse:
+      type: object
+      properties:
+        authorizationId:
+          type: string
+          pattern: "^auth_[a-zA-Z0-9]+$"
+          example: "auth_xyz789"
+        status:
+          type: string
+          enum: [pending, authorized, captured, voided, expired]
+          example: "authorized"
+        amount:
+          type: integer
+          example: 10000
+        currency:
+          type: string
+          example: "USD"
+        capturedAmount:
+          type: integer
+          example: 0
+        customerId:
+          type: string
+          example: "cust_abc123"
+        paymentMethodId:
+          type: string
+          example: "pm_card_visa_4242"
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+        links:
+          type: object
+          properties:
+            self:
+              type: string
+            capture:
+              type: string
+            void:
+              type: string
+
+    AuthorizationListResponse:
+      type: object
+      properties:
+        authorizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthorizationResponse'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    CaptureResponse:
+      type: object
+      properties:
+        authorizationId:
+          type: string
+        transactionId:
+          type: string
+          description: The resulting transaction from the capture
+        status:
+          type: string
+          enum: [captured, partially_captured]
+        capturedAmount:
+          type: integer
+        remainingAmount:
+          type: integer
+        capturedAt:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalPages:
+          type: integer
+        totalItems:
+          type: integer
+        hasNext:
+          type: boolean
+        hasPrevious:
+          type: boolean
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "healthy"
+        version:
+          type: string
+          example: "2.0.0"
+        timestamp:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - code
+        - timestamp
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+        code:
+          type: string
+          enum: [VALIDATION_ERROR, BUSINESS_RULE_VIOLATION, AUTHENTICATION_ERROR, AUTHORIZATION_ERROR, RESOURCE_NOT_FOUND, PAYMENT_DECLINED]
+        timestamp:
+          type: string
+          format: date-time
