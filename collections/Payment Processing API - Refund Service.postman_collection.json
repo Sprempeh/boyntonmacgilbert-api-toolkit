@@ -187,6 +187,7 @@
 			"listen": "prerequest",
 			"script": {
 				"type": "text/javascript",
+				"requests": {},
 				"exec": [
 					"// ============================================",
 					"// JWT Auto-Authentication Script",
@@ -261,13 +262,23 @@
 					"}"
 				]
 			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
 		}
 	],
 	"variable": [
 		{
 			"key": "base_url",
-			"value": "{{base_url}}",
-			"type": "string"
+			"value": "{{base_url}}"
 		}
 	]
 }

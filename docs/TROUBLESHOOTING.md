@@ -180,9 +180,33 @@ PORT=3001 npm start
 
 ### Postman can't reach localhost
 
+**Most common cause: Wrong agent selected!**
+
 1. **Use Desktop Agent** (not Cloud Agent)
+   - Look at bottom-right of Postman
+   - Click the agent icon
+   - Select **"Desktop Agent"**
+   - Without this, Postman CAN'T reach localhost!
+
 2. **Enable local network access** in browser (if using web version)
 3. **Check firewall** isn't blocking port 3000
+
+### Pre-request script errors with mock server
+
+The collection's pre-request script is built for production JWT auth. For mock testing:
+
+1. **Option A: Comment out the script**
+   - Open collection → Pre-request Script tab
+   - Select all → Comment out (Cmd+/ or Ctrl+/)
+   - The mock server uses simpler auth
+
+2. **Option B: Just get a token manually**
+   ```bash
+   curl -X POST http://localhost:3000/oauth/token \
+     -d "grant_type=client_credentials&client_id=test&client_secret=test"
+   ```
+   - Copy the `access_token`
+   - Paste into your environment's `jwt_token` variable
 
 ---
 
