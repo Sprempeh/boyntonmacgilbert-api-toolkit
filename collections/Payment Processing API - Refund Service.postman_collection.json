@@ -1,0 +1,273 @@
+{
+	"info": {
+		"_postman_id": "6f6ec54f-abb6-4be2-b1de-d45411ffff1b",
+		"name": "Payment Processing API - Refund Service",
+		"description": "Comprehensive API for managing payment refunds in a financial services platform.\nThis API handles refund creation, status tracking, cancellation, and reporting for\npayment transactions processed through the authorization and capture workflow.\n\n**Authentication:**\n- External partners: OAuth 2.0 (Bearer token)\n- Internal services: JWT token (Bearer token)\n\n**Rate Limits:**\n- Standard tier: 100 requests/minute\n- Enterprise tier: 1000 requests/minute\n",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18353542"
+	},
+	"item": [
+		{
+			"name": "Refunds",
+			"item": [
+				{
+					"name": "Create a new refund",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"transactionId\": \"txn_1234567890abcdef\",\n  \"amount\": null,\n  \"reason\": \"Customer requested refund\",\n  \"notifyCustomer\": true,\n  \"metadata\": {\n    \"initiatedBy\": \"admin@example.com\",\n    \"ticketNumber\": \"TKT-12345\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/refunds",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"refunds"
+							]
+						},
+						"description": "Initiates a refund for a previously captured payment transaction. The refund\ncan be for the full amount or a partial amount. The refund status will be\n'pending' initially and transition to 'completed' or 'failed' based on\nprocessing results.\n\n**Business Rules:**\n- Refunds can only be issued for transactions in 'captured' status\n- Partial refunds must not exceed the original transaction amount\n- Refunds cannot be created more than 180 days after the original transaction\n- Maximum of 5 refunds per transaction\n"
+					},
+					"response": []
+				},
+				{
+					"name": "Cancel a pending refund",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Customer changed mind and wants to keep the item\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/refunds/cancel",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"refunds",
+								"cancel"
+							]
+						},
+						"description": "Cancels a refund that is in 'pending' status. Once a refund has started\nprocessing or is completed, it cannot be cancelled. The refund will be\nimmediately moved to 'cancelled' status.\n"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints tagged with 'Refunds'"
+		},
+		{
+			"name": "Refund Status",
+			"item": [
+				{
+					"name": "List refunds",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/refunds",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"refunds"
+							]
+						},
+						"description": "Retrieves a paginated list of refunds. Supports filtering by transaction ID,\nstatus, date range, and amount range. Results are sorted by creation date\nin descending order (newest first).\n"
+					},
+					"response": []
+				},
+				{
+					"name": "Get refund details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/refunds",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"refunds"
+							]
+						},
+						"description": "Retrieves detailed information about a specific refund by its ID.\nIncludes full status history, processing details, and related transaction information.\n"
+					},
+					"response": []
+				},
+				{
+					"name": "Get refund status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/refunds/status",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"refunds",
+								"status"
+							]
+						},
+						"description": "Retrieves the current status of a refund. This is a lightweight endpoint\noptimized for frequent polling. Returns minimal data compared to the full\nrefund details endpoint.\n"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints tagged with 'Refund Status'"
+		},
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						},
+						"description": "Returns the health status of the refund service. Useful for monitoring\nand load balancer health checks.\n"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints tagged with 'Health'"
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// ============================================",
+					"// JWT Auto-Authentication Script",
+					"// ============================================",
+					"// This script automatically handles token refresh.",
+					"// Set these environment variables:",
+					"//   - auth_url: OAuth token endpoint base URL",
+					"//   - client_id: Your OAuth client ID",
+					"//   - client_secret: Your OAuth client secret",
+					"// ============================================",
+					"",
+					"const currentTime = Math.floor(Date.now() / 1000);",
+					"const tokenExpiry = pm.environment.get(\"jwt_expiry\");",
+					"const EXPIRY_BUFFER = 60; // Refresh 60 seconds before expiry",
+					"",
+					"// Check if token needs refresh",
+					"if (!tokenExpiry || currentTime >= (tokenExpiry - EXPIRY_BUFFER)) {",
+					"    console.log(\"Token expired or missing, refreshing...\");",
+					"    ",
+					"    const authUrl = pm.environment.get(\"auth_url\");",
+					"    const clientId = pm.environment.get(\"client_id\");",
+					"    const clientSecret = pm.environment.get(\"client_secret\");",
+					"    ",
+					"    // Validate configuration",
+					"    if (!authUrl || !clientId || !clientSecret) {",
+					"        console.error(\"Authentication configuration incomplete.\");",
+					"        console.error(\"Required: auth_url, client_id, client_secret\");",
+					"        throw new Error(\"Missing authentication configuration. Please set environment variables.\");",
+					"    }",
+					"    ",
+					"    // Request new token",
+					"    pm.sendRequest({",
+					"        url: authUrl + \"/oauth/token\",",
+					"        method: 'POST',",
+					"        header: {",
+					"            'Content-Type': 'application/x-www-form-urlencoded'",
+					"        },",
+					"        body: {",
+					"            mode: 'urlencoded',",
+					"            urlencoded: [",
+					"                {key: 'grant_type', value: 'client_credentials'},",
+					"                {key: 'client_id', value: clientId},",
+					"                {key: 'client_secret', value: clientSecret}",
+					"            ]",
+					"        }",
+					"    }, function(err, response) {",
+					"        if (err) {",
+					"            console.error(\"Token request failed:\", err);",
+					"            throw new Error(\"Authentication failed: \" + err);",
+					"        }",
+					"        ",
+					"        if (response.code !== 200) {",
+					"            console.error(\"Token request returned:\", response.code, response.status);",
+					"            throw new Error(\"Authentication failed: \" + response.status);",
+					"        }",
+					"        ",
+					"        const data = response.json();",
+					"        ",
+					"        if (!data.access_token) {",
+					"            console.error(\"No access_token in response:\", data);",
+					"            throw new Error(\"Invalid token response\");",
+					"        }",
+					"        ",
+					"        // Store token and expiry",
+					"        pm.environment.set(\"jwt_token\", data.access_token);",
+					"        pm.environment.set(\"jwt_expiry\", currentTime + (data.expires_in || 3600));",
+					"        ",
+					"        console.log(\"Token refreshed successfully. Expires in:\", data.expires_in || 3600, \"seconds\");",
+					"    });",
+					"} else {",
+					"    console.log(\"Using cached token. Expires in:\", tokenExpiry - currentTime, \"seconds\");",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "{{base_url}}",
+			"type": "string"
+		}
+	]
+}
